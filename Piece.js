@@ -6,8 +6,13 @@ class Piece {
     this.color = options.color || random(C.colors);
     this.offsetX = 0;
     this.offsetY = 0;
+    this.moveTime = new Date().getTime();
+    this.moveDelay = 60;
   }
   keyboardMove(dir) {
+    if (this.throttled()) {
+      return;
+    }
     let newPosX = this.x;
     let newPosY = this.y;
     if (dir === C.left) {
@@ -29,10 +34,8 @@ class Piece {
     }
   }
   mouseMove() {
-    this.x = Math.floor(mouseX / C.gridSize) - this.offsetX;
-    this.y = Math.floor(mouseY / C.gridSize) - this.offsetY;
-    // let dX = mouseX - pmouseX;
-    // let dY = mouseY - pmouseY;
+    this.x = G.toGrid(mouseX) - this.offsetX;
+    this.y = G.toGrid(mouseY) - this.offsetY;
   }
 
   isOutofBounds(textX, testY) {
@@ -40,14 +43,17 @@ class Piece {
     return c.some((cell) => cell[0] < 0 || cell[0] >= C.gridWidth || cell[1] < 0 || cell[1] >= C.gridHeight);
   }
 
-  rotateClockwise() {
-    const transposed = this.shape[0].map((_, index) => this.shape.map((row) => row[index]));
-    this.shape = transposed.map((row) => row.reverse());
-  }
-
-  rotateCounterClockwise() {
-    const reversed = this.shape.map((row) => row.reverse());
-    this.shape = reversed[0].map((_, index) => reversed.map((row) => row[index]));
+  rotate(direction) {
+    if (this.throttled()) {
+      return;
+    }
+    if (direction === C.clockwise) {
+      const transposed = this.shape[0].map((_, index) => this.shape.map((row) => row[index]));
+      this.shape = transposed.map((row) => row.reverse());
+    } else if (direction === C.counterClockwise) {
+      const reversed = this.shape.map((row) => row.reverse());
+      this.shape = reversed[0].map((_, index) => reversed.map((row) => row[index]));
+    }
   }
 
   occupiedCells(baseX = this.x, baseY = this.y) {
@@ -73,10 +79,20 @@ class Piece {
   }
   isAtLocation(x, y) {
     let result = this.occupiedCells().some((cell) => cell[0] === x && cell[1] === y);
-    if(result){
-      this.offsetX = x - this.x
-      this.offsetY = y - this.y
+    if (result) {
+      this.offsetX = x - this.x;
+      this.offsetY = y - this.y;
     }
-    return result
+    return result;
+  }
+  throttled() {
+    const now = new Date().getTime();
+    console.log(now);
+    if (now < this.moveTime + this.moveDelay) {
+      return true;
+    } else {
+      this.moveTime = now;
+      return false;
+    }
   }
 }

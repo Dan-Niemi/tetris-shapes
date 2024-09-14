@@ -10,6 +10,7 @@ function setup() {
 
 function draw() {
   background(90);
+  getInput();
   drawGrid();
   G.pieces.forEach((piece) => piece.draw());
   G.selectedPiece && G.selectedPiece.mouseMove();
@@ -20,39 +21,34 @@ function mousePressed() {
     if (G.selectedPiece) {
       G.selectedPiece = null;
     } else {
-      G.selectedPiece = G.pieces.find((piece) => piece.isAtLocation(toGrid(mouseX), toGrid(mouseY)));
+      G.selectedPiece = G.pieces.find((piece) => piece.isAtLocation(G.toGrid(mouseX), G.toGrid(mouseY)));
     }
   } else if (mouseButton === RIGHT) {
-    G.pieces.push(new Piece({x:toGrid(mouseX),y:toGrid(mouseY)}))
+    let newPiece = new Piece({ x: G.toGrid(mouseX), y: G.toGrid(mouseY) });
+    G.pieces.push(newPiece);
+    G.selectedPiece = newPiece;
   }
 }
-function keyPressed() {
+function mouseWheel(event) {
   if (!G.selectedPiece) {
-    return;
+    return false;
   }
-  if (key === "a") {
-    G.selectedPiece.keyboardMove(C.left);
-  }
-  if (key === "w") {
-    G.selectedPiece.keyboardMove(C.up);
-  }
-  if (key === "d") {
-    G.selectedPiece.keyboardMove(C.right);
-  }
-  if (key === "s") {
-    G.selectedPiece.keyboardMove(C.down);
-  }
-  if (key === "e") {
-    G.selectedPiece.rotateClockwise();
-  }
-  if (key === "q") {
-    G.selectedPiece.rotateCounterClockwise();
-  }
-  if (key === "n") {
-    G.pieces[0] = new Piece();
-  }
+  event.delta > 0 ? G.selectedPiece.rotate(C.counterClockwise) : G.selectedPiece.rotate(C.clockwise);
 }
 
+function keyPressed() {
+  if (key === "n") {G.pieces[0] = new Piece();}
+  if(!G.selectedPiece){return}
+  if (key === "e") {G.selectedPiece.rotate(C.clockwise);}
+  if (key === "q") {G.selectedPiece.rotate(C.counterClockwise);}
+}
+function getInput(){
+  if(!G.selectedPiece){return}
+  if (keyIsDown(65)){G.selectedPiece.keyboardMove(C.left);}
+  if (keyIsDown(68)){G.selectedPiece.keyboardMove(C.right);}
+  if (keyIsDown(87)){G.selectedPiece.keyboardMove(C.up);}
+  if (keyIsDown(83)){G.selectedPiece.keyboardMove(C.down);}
+}
 function drawGrid() {
   push();
   textAlign(CENTER, CENTER);
@@ -77,9 +73,3 @@ function drawGrid() {
   pop();
 }
 
-function toGrid(pos){
-  return floor(pos / C.gridSize);
-}
-function toScreen(pos){
-  return floor(pos * C.gridSize);
-}

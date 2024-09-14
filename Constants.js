@@ -3,6 +3,8 @@ const C = {
   up:1,
   right:2,
   down:3,
+  clockwise:4,
+  counterClockwise:5,
   gridSize: 40,
   gridWidth: 16,
   gridHeight: 16,
