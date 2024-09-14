@@ -1,12 +1,13 @@
 class Piece {
-  constructor(shape = random(C.shapes), color = random(C.colors), x = Math.floor(C.gridWidth / 2), y = Math.floor(C.gridHeight / 2)) {
-    
-    this.shape = shape;
-    this.color = color;
-    this.x = x;
-    this.y = y;
+  constructor(options = {}) {
+    this.x = options.x ?? Math.floor(C.gridWidth / 2);
+    this.y = options.y ?? Math.floor(C.gridHeight / 2);
+    this.shape = options.shape || random(C.shapes);
+    this.color = options.color || random(C.colors);
+    this.offsetX = 0;
+    this.offsetY = 0;
   }
-  move(dir) {
+  keyboardMove(dir) {
     let newPosX = this.x;
     let newPosY = this.y;
     if (dir === C.left) {
@@ -27,6 +28,13 @@ class Piece {
     } else {
     }
   }
+  mouseMove() {
+    this.x = Math.floor(mouseX / C.gridSize) - this.offsetX;
+    this.y = Math.floor(mouseY / C.gridSize) - this.offsetY;
+    // let dX = mouseX - pmouseX;
+    // let dY = mouseY - pmouseY;
+  }
+
   isOutofBounds(textX, testY) {
     let c = this.occupiedCells(textX, testY);
     return c.some((cell) => cell[0] < 0 || cell[0] >= C.gridWidth || cell[1] < 0 || cell[1] >= C.gridHeight);
@@ -64,6 +72,11 @@ class Piece {
     });
   }
   isAtLocation(x, y) {
-    return this.occupiedCells().some((cell) => cell[0] === x && cell[1] === y);
+    let result = this.occupiedCells().some((cell) => cell[0] === x && cell[1] === y);
+    if(result){
+      this.offsetX = x - this.x
+      this.offsetY = y - this.y
+    }
+    return result
   }
 }

@@ -1,25 +1,57 @@
-
-
 function setup() {
-  createCanvas(C.gridWidth * C.gridSize, C.gridHeight * C.gridSize);
+  cnv = createCanvas(C.gridWidth * C.gridSize, C.gridHeight * C.gridSize);
+  cnv.elt.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+  });
   colorMode(HSL);
   stroke(75);
-  Alpine.store("g").pieces.push(new Piece());
+  G.pieces.push(new Piece());
 }
 
 function draw() {
   background(90);
   drawGrid();
   G.pieces.forEach((piece) => piece.draw());
+  G.selectedPiece && G.selectedPiece.mouseMove();
 }
 
 function mousePressed() {
-  let gridX = Math.floor(mouseX / C.gridSize);
-  let gridY = Math.floor(mouseY / C.gridSize);
-  G.selectedPiece = G.pieces.find((piece) => piece.isAtLocation(gridX, gridY));
-  console.log(G.selectedPiece);
+  if (mouseButton === LEFT) {
+    if (G.selectedPiece) {
+      G.selectedPiece = null;
+    } else {
+      G.selectedPiece = G.pieces.find((piece) => piece.isAtLocation(toGrid(mouseX), toGrid(mouseY)));
+    }
+  } else if (mouseButton === RIGHT) {
+    G.pieces.push(new Piece({x:toGrid(mouseX),y:toGrid(mouseY)}))
+  }
 }
-
+function keyPressed() {
+  if (!G.selectedPiece) {
+    return;
+  }
+  if (key === "a") {
+    G.selectedPiece.keyboardMove(C.left);
+  }
+  if (key === "w") {
+    G.selectedPiece.keyboardMove(C.up);
+  }
+  if (key === "d") {
+    G.selectedPiece.keyboardMove(C.right);
+  }
+  if (key === "s") {
+    G.selectedPiece.keyboardMove(C.down);
+  }
+  if (key === "e") {
+    G.selectedPiece.rotateClockwise();
+  }
+  if (key === "q") {
+    G.selectedPiece.rotateCounterClockwise();
+  }
+  if (key === "n") {
+    G.pieces[0] = new Piece();
+  }
+}
 
 function drawGrid() {
   push();
@@ -43,4 +75,11 @@ function drawGrid() {
     }
   }
   pop();
+}
+
+function toGrid(pos){
+  return floor(pos / C.gridSize);
+}
+function toScreen(pos){
+  return floor(pos * C.gridSize);
 }
